@@ -1,0 +1,6 @@
+result/
+**/*.user
+**/.vs/
+**/Debug/
+**/Release/
+**/x64/
