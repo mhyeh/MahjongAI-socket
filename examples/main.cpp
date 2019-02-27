@@ -1,6 +1,10 @@
 #include "../src/sio_client.h"
-#include "./UUID_generator.h"
+#include "UUID_generator.h"
+#include "irb01.h"
+
+
 #include <functional>
+#include <sstream>
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -66,77 +70,154 @@ socket::ptr current_socket;
 string uuid;
 string room;
 
+Irb01 player;
+
+MJCard drawTile;
+MJCard throwTile;
+
 void bind_events()
 {
-	current_socket->on("readyToStart", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("readyToStart", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
-		room = data->get_string();
+		room = data[0]->get_string();
 		message::list list = message::list();
 		list.push(uuid);
 		list.push(room);
 		current_socket->emit("auth",  list);
 		current_socket->emit("ready", list, [](message::list const& ack) {
 			_lock.lock();
-			// player.id = ack[0]->get_int();
+			player.id = ack[0]->get_int();
 			_lock.unlock();
 		});
 		_lock.unlock();
 	}));
 
-	current_socket->on("broadcastOpenDoor", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("broadcastOpenDoor", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		// player.opendoorIdx = data->get_int();
 		_lock.unlock();
 	}));
 
-	current_socket->on("broadcastWindAndRound", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("broadcastWindAndRound", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		// player.windIdx  = data->get_vector()[0]->get_int();
 		// player.roundIdx = data->get_vector()[1]->get_int();
 		_lock.unlock();
 	}));
 
-	current_socket->on("dealTile", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("dealTile", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
-		// player.hand += 
+		vector<message::ptr> list = data[0]->get_vector();
+		for (message::ptr t : list) {
+			player.Hand += MJCard::StringToCard(t->get_string());
+		}
 		_lock.unlock();
 	}));
 
-	current_socket->on("BroadcastBuHua", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("BroadcastBuHua", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		// player.flower +=
 		_lock.unlock();
 	}));
 
-	current_socket->on("BroadcastHua", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("BroadcastHua", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
-		string id     = data->get_vector()[0]->get_string();
+		/*string id     = data[0]->get_string();
 		string flower = data->get_vector()[1]->get_string();
-		// if (id == player.id) {
-		//     player.hand   -= 
-		//     player.flower +=
-		// }
+		if (id == player.id) {
+		    player.hand   -= 
+		    player.flower +=
+		}*/
 		_lock.unlock();
 	}));
 	
-	current_socket->on("draw", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("draw", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
-		// string tile  = data->get_string();
-		// player.hand +=
+		drawTile = MJCard::StringToCard(data[0]->get_string());
 		_lock.unlock();
 	}));
 
-	current_socket->on("throw", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("throw", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
-		// current_socket->emit("throwTile", player.Throw());
+		message::list list = message::list();
+		cout << "throw: ";
+		string tile = player.Throw(drawTile).toString();
+		cout << tile << endl;
+		list.push(tile);
+		current_socket->emit("throwTile", list);
 		_lock.unlock();
 	}));
-	current_socket->on("command", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+
+	current_socket->on("broadcastThrow", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
-		// current_socket->emit("sendCommand", player.OnCommand(data->get_string()));
+		throwTile = MJCard::StringToCard(data[1]->get_string());
+		player.discards += throwTile;
+		if (data[0]->get_int() == player.id) {
+			player.Hand -= throwTile;
+		}
 		_lock.unlock();
 	}));
-	current_socket->on("end", sio::socket::event_listener_aux([&](string const& name, message::ptr const& data, bool isAck, message::list &ack_resp) {
+
+	current_socket->on("command", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
+		_lock.lock();
+		map<string, message::ptr> tmp = data[0]->get_map();
+		int command = data[1]->get_int();
+		int idx = data[2]->get_int();
+		map<int, vector<MJCard>> commandTile = map<int, vector<MJCard>>();
+		for (map<string, message::ptr>::iterator it = tmp.begin(); it != tmp.end(); it++) {
+			vector<MJCard> cards = vector<MJCard>();
+			vector<message::ptr> value = it->second->get_vector();
+			for (auto i : value) {
+				cards.push_back(MJCard::StringToCard(i->get_string()));
+			}
+			commandTile[stoi(it->first)] = cards;
+		}
+		bool canZimo, canOnPonGon, canHu, canEat, canGon, canPon;
+		canZimo = (command & COMMAND_ZIMO) != 0;
+		canOnPonGon = (command & (COMMAND_ANGON | COMMAND_PONGON)) != 0;
+		canHu  = (command & COMMAND_HU) != 0;
+		canEat = (command & COMMAND_EAT) != 0;
+		canGon = (command & COMMAND_GON) != 0;
+		canPon = (command & COMMAND_PON) != 0;
+
+		pair<CommandType, MJCard> cmd;
+		if (canZimo || canOnPonGon) {
+			MJCard gonTile;
+			if ((command & COMMAND_ANGON) != 0) {
+				gonTile = commandTile[COMMAND_ANGON][0];
+			}
+			else if ((command & COMMAND_PONGON) != 0) {
+				gonTile = commandTile[COMMAND_PONGON][0];
+			}
+			else {
+				gonTile = MJCard();
+			}
+			cmd = player.WannaHuGon(canZimo, canOnPonGon, drawTile, gonTile);
+		}
+		else {
+			cmd = pair<CommandType, MJCard>();
+			cmd.first  = player.WannaHGPE(canHu, canGon, canPon, canEat, throwTile, idx);
+			cmd.second = throwTile;
+			if (cmd.first == COMMAND_EAT) {
+				int eat = player.Pick2Eat(throwTile);
+				if (eat == 0) {
+					cmd.second.value -= 2;
+				}
+				else if (eat == 1) {
+					cmd.second.value--;
+				}
+			}
+		}
+		stringstream ss;
+		ss << "{Command:" << cmd.first << ",Tile:" << cmd.second.toString() << ",Score:0}";
+		string returnStr;
+		ss >> returnStr;
+		message::list list = message::list();
+		list.push(returnStr);
+		current_socket->emit("sendCommand", list);
+		_lock.unlock();
+	}));
+	current_socket->on("end", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		_lock.unlock();
 	}));
@@ -149,6 +230,7 @@ MAIN_FUNC
     connection_listener l(h);
 
 	// create new bot
+	player = Irb01();
     
     h.set_open_listener(std::bind(&connection_listener::on_connected, &l));
     h.set_close_listener(std::bind(&connection_listener::on_close, &l,std::placeholders::_1));

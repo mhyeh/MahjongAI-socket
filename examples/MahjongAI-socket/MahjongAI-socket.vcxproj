@@ -153,6 +153,9 @@
     <ClInclude Include="..\..\src\sio_client.h" />
     <ClInclude Include="..\..\src\sio_message.h" />
     <ClInclude Include="..\..\src\sio_socket.h" />
+    <ClInclude Include="..\irb01.h" />
+    <ClInclude Include="..\MJCards.h" />
+    <ClInclude Include="..\Player.h" />
     <ClInclude Include="UUID_generator.h" />
   </ItemGroup>
   <ItemGroup>
@@ -160,7 +163,10 @@
     <ClCompile Include="..\..\src\internal\sio_packet.cpp" />
     <ClCompile Include="..\..\src\sio_client.cpp" />
     <ClCompile Include="..\..\src\sio_socket.cpp" />
+    <ClCompile Include="..\irb01.cpp" />
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\MJCards.cpp" />
+    <ClCompile Include="..\Player.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
