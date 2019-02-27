@@ -22,7 +22,7 @@ namespace sio
     public:
         static void adapt_func(socket::event_listener_aux  const& func, event& event)
         {
-            func(event.get_name(),event.get_message(),event.need_ack(),event.get_ack_message_impl());
+            func(event.get_name(),event.get_messages(),event.need_ack(),event.get_ack_message_impl());
         }
         
         static inline socket::event_listener do_adapt(socket::event_listener_aux const& func)
