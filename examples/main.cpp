@@ -118,13 +118,13 @@ void bind_events()
 		_lock.unlock();
 	}));
 
-	current_socket->on("BroadcastBuHua", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("broadcastBuHua", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		// player.flower +=
 		_lock.unlock();
 	}));
 
-	current_socket->on("BroadcastHua", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("broadcastHua", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		/*string id     = data[0]->get_string();
 		string flower = data->get_vector()[1]->get_string();
@@ -222,7 +222,7 @@ void bind_events()
 		_lock.unlock();
 	}));
 
-	current_socket->on("BroadcastCommand", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("success", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		int command = data[1]->get_int();
 		string tileStr = data[2]->get_string();
@@ -267,7 +267,7 @@ void bind_events()
 		_lock.unlock();
 	}));
 
-	current_socket->on("BroadcastCommand", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
+	current_socket->on("broadcastCommand", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		if (player.id != data[1]->get_int()) {
 			int command = data[2]->get_int();
