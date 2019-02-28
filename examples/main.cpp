@@ -2,7 +2,7 @@
 #include "UUID_generator.h"
 #include "irb01.h"
 
-
+#include <boost/tokenizer.hpp>
 #include <functional>
 #include <sstream>
 #include <iostream>
@@ -107,6 +107,10 @@ void bind_events()
 
 	current_socket->on("dealTile", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
+		for (int i = 0; i < 5; i++) {
+			player.Hand[i] = 0;
+			player.discards[i] = 0;
+		}
 		vector<message::ptr> list = data[0]->get_vector();
 		for (message::ptr t : list) {
 			player.Hand += MJCard::StringToCard(t->get_string());
@@ -217,6 +221,87 @@ void bind_events()
 		current_socket->emit("sendCommand", list);
 		_lock.unlock();
 	}));
+
+	current_socket->on("BroadcastCommand", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
+		_lock.lock();
+		int command = data[1]->get_int();
+		string tileStr = data[2]->get_string();
+		if (command == COMMAND_EAT) {
+			boost::tokenizer<> tok(tileStr);
+			boost::tokenizer<>::iterator it = tok.begin();
+			MJCard firstTile = MJCard::StringToCard(*it);
+			MJCard centerTile = MJCard::StringToCard(*(++it));
+			for (int i = 0; i < 3; i++) {
+				if (firstTile.value + i != centerTile.value) {
+					MJCard tile = MJCard(firstTile.color, firstTile.value + i);
+					player.Hand -= tile;
+					player.discards += tile;
+				}
+			}
+		}
+		else if (command == COMMAND_PON) {
+			MJCard tile = MJCard::StringToCard(tileStr);
+			for (int i = 0; i < 2; i++) {
+				player.Hand -= tile;
+				player.discards += tile;
+			}
+		}
+		else if (command == COMMAND_GON) {
+			MJCard tile = MJCard::StringToCard(tileStr);
+			for (int i = 0; i < 3; i++) {
+				player.Hand -= tile;
+				player.discards += tile;
+			}
+		}
+		else if (command == COMMAND_PONGON) {
+			MJCard tile = MJCard::StringToCard(tileStr);
+			player.Hand -= tile;
+			player.discards += tile;
+		}
+		else if (command == COMMAND_ANGON) {
+			MJCard tile = MJCard::StringToCard(tileStr);
+			for (int i = 0; i < 4; i++) {
+				player.Hand -= tile;
+			}
+		}
+		_lock.unlock();
+	}));
+
+	current_socket->on("BroadcastCommand", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
+		_lock.lock();
+		if (player.id != data[1]->get_int()) {
+			int command = data[2]->get_int();
+			string tileStr = data[3]->get_string();
+			if (command == COMMAND_EAT) {
+				boost::tokenizer<> tok(tileStr);
+				boost::tokenizer<>::iterator it = tok.begin();
+				MJCard firstTile = MJCard::StringToCard(*it);
+				MJCard centerTile = MJCard::StringToCard(*(++it));
+				for (int i = 0; i < 3; i++) {
+					if (firstTile.value + i != centerTile.value) {
+						player.discards += MJCard(firstTile.color, firstTile.value + i);
+					}
+				}
+			}
+			else if (command == COMMAND_PON) {
+				MJCard tile = MJCard::StringToCard(tileStr);
+				player.discards += tile;
+				player.discards += tile;
+			}
+			else if (command == COMMAND_GON) {
+				MJCard tile = MJCard::StringToCard(tileStr);
+				player.discards += tile;
+				player.discards += tile;
+				player.discards += tile;
+			}
+			else if (command == COMMAND_PONGON) {
+				MJCard tile = MJCard::StringToCard(tileStr);
+				player.discards += tile;
+			}
+		}
+		_lock.unlock();
+	}));
+
 	current_socket->on("end", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		_lock.unlock();
