@@ -2,7 +2,7 @@
 
 ### With CMake
 1. Install boost, see [Boost setup](#boost_setup) section.
-2. Use `git clone --recurse-submodules https://github.com/socketio/socket.io-client-cpp.git` to clone your local repo.
+2. Use `git clone --recurse-submodules https://github.com/BlackKite0206233/MahjongAI-socket.git` to clone your local repo.
 3. Run `cmake -DBOOST_ROOT:STRING=<your boost install folder> -DBOOST_VER:STRING=<your boost version> ./`
 4. Run `make install`(if makefile generated) or open generated project (if project file generated) to build.
 5. Outputs is under `./build`, link with the all static libs under `./build/lib` and  include headers under `./build/include` in your client code where you want to use it.
@@ -19,7 +19,7 @@ cmake
 
 ### Without CMake
 1. Install boost, see [Boost setup](#boost_setup) section.
-2. Use `git clone --recurse-submodules https://github.com/socketio/socket.io-client-cpp.git` to clone your local repo.
+2. Use `git clone --recurse-submodules https://github.com/BlackKite0206233/MahjongAI-socket.git` to clone your local repo.
 3. Add `<your boost install folder>/include`,`./lib/websocketpp` and `./lib/rapidjson/include` to headers search path.
 4. Include all files under `./src` in your project, add `sio_client.cpp`,`sio_socket.cpp`,`internal/sio_client_impl.cpp`, `internal/sio_packet.cpp` to source list.
 5. Add `<your boost install folder>/lib` to library search path, add `boost.lib`(Win32) or `-lboost`(Other) link option.
