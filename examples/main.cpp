@@ -2,6 +2,7 @@
 #include "UUID_generator.h"
 #include "irb01.h"
 
+#include <boost/random/random_device.hpp>
 #include <boost/tokenizer.hpp>
 #include <functional>
 #include <sstream>
