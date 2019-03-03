@@ -17,8 +17,16 @@ public:
 		m['d'] = 1;
 		m['b'] = 2;
 		m['o'] = 3;
-		m['f'] = 4;
-		return MJCard(m[card[0]], card[1] - '1');
+		m['f'] = 5;
+		int color = m[card[0]];
+		int value = card[1] - '1';
+		if (color == 3 && value < 4) {
+			color == 4;
+		}
+		if (color == 3 && value >= 4) {
+			value -= 4;
+		}
+		return MJCard(color, value);
 	}
 	int color;
 	int value;
@@ -30,7 +38,17 @@ public:
 	string toString() {
 		string arr[] = { "c", "d", "b", "o", "f" };
 		stringstream ss;
-		ss << arr[color] << value + 1;
+		int _color = color;
+		int _value = value;
+		if (_color == 3) {
+			_value += 4;
+		} else if (_color == 4) {
+			_color = 3;
+		}
+		else if (_color == 5) {
+			_color = 4;
+		}
+		ss << arr[_color] << _value + 1;
 		string str;
 		ss >> str;
 		return str;

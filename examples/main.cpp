@@ -2,6 +2,7 @@
 #include "UUID_generator.h"
 #include "irb01.h"
 
+#include <ctime>
 #include <boost/random/random_device.hpp>
 #include <boost/tokenizer.hpp>
 #include <functional>
@@ -311,7 +312,7 @@ void bind_events()
 
 MAIN_FUNC
 {
-
+	srand(time(NULL));
     sio::client h;
     connection_listener l(h);
 
@@ -330,6 +331,7 @@ MAIN_FUNC
     _lock.unlock();
 	current_socket = h.socket();
 	bind_events();
+	cout << MathUtils::generateUUID() << endl;
 	current_socket->emit("join", "bot-" + MathUtils::generateUUID(), [](message::list const& ack) {
 		_lock.lock();
 		uuid = ack[0]->get_string();

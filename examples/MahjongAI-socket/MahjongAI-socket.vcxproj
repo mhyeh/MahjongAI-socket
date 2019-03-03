@@ -156,7 +156,7 @@
     <ClInclude Include="..\irb01.h" />
     <ClInclude Include="..\MJCards.h" />
     <ClInclude Include="..\Player.h" />
-    <ClInclude Include="UUID_generator.h" />
+    <ClInclude Include="..\UUID_generator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\internal\sio_client_impl.cpp" />
