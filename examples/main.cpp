@@ -77,6 +77,8 @@ Irb01 player;
 MJCard drawTile;
 MJCard throwTile;
 
+bool onlyThrow;
+
 void bind_events()
 {
 	current_socket->on("readyToStart", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
@@ -140,6 +142,7 @@ void bind_events()
 	current_socket->on("draw", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		drawTile = MJCard::StringToCard(data[0]->get_string());
+		onlyThrow = false;
 		_lock.unlock();
 	}));
 
@@ -147,10 +150,19 @@ void bind_events()
 		_lock.lock();
 		message::list list = message::list();
 		cout << "throw: ";
-		string tile = player.Throw(drawTile).toString();
+		string tile;
+		if (onlyThrow) {
+			tile = player.Throw(drawTile).toString(); // TODO: зяжи player.Throw().toString()
+		}
+		else {
+			tile = player.Throw(drawTile).toString();
+		}
 		cout << tile << endl;
 		list.push(tile);
 		current_socket->emit("throwTile", list);
+		if (!onlyThrow) {
+			player.Hand += drawTile;
+		}
 		_lock.unlock();
 	}));
 
