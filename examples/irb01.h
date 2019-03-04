@@ -30,8 +30,8 @@ typedef struct
 class Irb01 : public Player {
 public:
 	Irb01();
-	MJCard Throw(const MJCard & card);
-	MJCard Throw();
+	MJCard Throw(const MJCard & card = MJCard(-100, -100));
+	
 	std::pair<CommandType, MJCard> WannaHuGon(bool canHu, bool canGon, const MJCard & card, const MJCard & gonCard);
 	CommandType WannaHGPE(bool canHu, bool canGon, bool canPon, bool canEat, const MJCard & card, int idx);
 	int Pick2Eat(const MJCard & card);

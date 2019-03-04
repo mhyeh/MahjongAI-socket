@@ -115,7 +115,7 @@ bool Player::IsHu() {
 	return false;
 }
 
-MJCard Player::Throw() {
+MJCard Player::Throw(const MJCard & card) {
 	return Hand.Rand();
 }
 

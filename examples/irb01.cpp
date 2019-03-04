@@ -27,7 +27,15 @@ Irb01::Irb01() {
 }
 
 MJCard Irb01::Throw(const MJCard & card) {
-	Tiles_ Hand_ = HandToTiles(Hand, card);
+	
+	Tiles_ Hand_;
+
+	if (card.color == -100) {
+		Hand_ = HandToTiles(Hand);
+	}
+	else {
+		Hand_ = HandToTiles(Hand, card);
+	}
 
 	int stepToHu = StepToHu1617(Hand_);
 
@@ -62,9 +70,7 @@ MJCard Irb01::Throw(const MJCard & card) {
 	return MJCard(0, 0);
 }
 
-MJCard Irb01::Throw() {
-	return Hand.Rand();
-}
+
 
 std::pair<CommandType, MJCard> Irb01::WannaHuGon(bool canHu, bool canGon, const MJCard & card, const MJCard & gonCard) {
 	if (canHu)

@@ -69,7 +69,7 @@ public:
 	virtual int Pick2Eat(const MJCard & card);
 
 	Actions Action;
-	virtual MJCard Throw();
+	virtual MJCard Throw(const MJCard & card = MJCard(-100, -100));
 
 
 };
