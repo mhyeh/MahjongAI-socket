@@ -158,6 +158,11 @@ void bind_events()
 			player.Hand[i] = 0;
 			player.discards[i] = 0;
 		}
+		player.eat = 0;
+		player.pon = 0;
+		player.gon = 0;
+		player.anGon = 0;
+
 		vector<message::ptr> list = data[0]->get_vector();
 		cout << "deal tile: ";
 		for (message::ptr t : list) {
