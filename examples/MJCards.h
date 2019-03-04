@@ -21,9 +21,8 @@ public:
 		int color = m[card[0]];
 		int value = card[1] - '1';
 		if (color == 3 && value < 4) {
-			color == 4;
-		}
-		if (color == 3 && value >= 4) {
+			color = 4;
+		} else if (color == 3 && value >= 4) {
 			value -= 4;
 		}
 		return MJCard(color, value);

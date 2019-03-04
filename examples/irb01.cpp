@@ -62,6 +62,10 @@ MJCard Irb01::Throw(const MJCard & card) {
 	return MJCard(0, 0);
 }
 
+MJCard Irb01::Throw() {
+	return Hand.Rand();
+}
+
 std::pair<CommandType, MJCard> Irb01::WannaHuGon(bool canHu, bool canGon, const MJCard & card, const MJCard & gonCard) {
 	if (canHu)
 		return std::make_pair(COMMAND_ZIMO, card);

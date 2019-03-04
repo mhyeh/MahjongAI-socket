@@ -79,6 +79,49 @@ MJCard throwTile;
 
 bool onlyThrow;
 
+long long CardTo34(const MJCard & card) {
+	long long result = 1;
+	switch (card.color) {
+	case 0:
+		result <<= card.value;
+		return result;
+	case 1:
+		result <<= (9 + card.value);
+		return result;
+	case 2:
+		result <<= (18 + card.value);
+		return result;
+	case 3:
+		result <<= (27 + card.value);
+		return result;
+	case 4:
+		result <<= (30 + card.value);
+		return result;
+	default:
+		cout << "CardTo34 error" << endl;
+		return -1;
+	}
+}
+
+long long CardTo63(const MJCard & card) {
+	long long result = 1;
+	switch (card.color) {
+	case 0:
+		result <<= (card.value * 3);
+		return result;
+	case 1:
+		result <<= (21 + card.value * 3);
+		return result;
+	case 2:
+		result <<= (42 + card.value * 3);
+		return result;
+
+	default:
+		cout << "CardTo63 error" << endl;
+		return -1;
+	}
+}
+
 void bind_events()
 {
 	current_socket->on("readyToStart", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
@@ -116,9 +159,13 @@ void bind_events()
 			player.discards[i] = 0;
 		}
 		vector<message::ptr> list = data[0]->get_vector();
+		cout << "deal tile: ";
 		for (message::ptr t : list) {
+			cout << t->get_string() << " ";
 			player.Hand += MJCard::StringToCard(t->get_string());
 		}
+		cout << endl;
+		cout << "Count: " << player.Hand.Count() << " " << player.Hand.Print() << endl;
 		_lock.unlock();
 	}));
 
@@ -141,6 +188,7 @@ void bind_events()
 	
 	current_socket->on("draw", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
+		cout << "draw: " << data[0]->get_string() << endl;
 		drawTile = MJCard::StringToCard(data[0]->get_string());
 		onlyThrow = false;
 		_lock.unlock();
@@ -149,15 +197,14 @@ void bind_events()
 	current_socket->on("throw", sio::socket::event_listener_aux([&](string const& name, message::list const& data, bool isAck, message::list &ack_resp) {
 		_lock.lock();
 		message::list list = message::list();
-		cout << "throw: ";
 		string tile;
 		if (onlyThrow) {
-			tile = player.Throw(drawTile).toString(); // TODO: 改成 player.Throw().toString()
+			tile = player.Throw().toString(); // TODO: 改成 player.Throw().toString()
 		}
 		else {
 			tile = player.Throw(drawTile).toString();
 		}
-		cout << tile << endl;
+		cout << "throw: " << tile << endl;
 		list.push(tile);
 		current_socket->emit("throwTile", list);
 		if (!onlyThrow) {
@@ -172,6 +219,7 @@ void bind_events()
 		player.discards += throwTile;
 		if (data[0]->get_int() == player.id) {
 			player.Hand -= throwTile;
+			cout << "Count: " << player.Hand.Count() << " " << player.Hand.Print() << endl;
 		}
 		_lock.unlock();
 	}));
@@ -227,9 +275,10 @@ void bind_events()
 			}
 		}
 		stringstream ss;
-		ss << "{Command:" << cmd.first << ",Tile:" << cmd.second.toString() << ",Score:0}";
+		ss << "{\"Command\":" << cmd.first << ",\"Tile\":\"" << cmd.second.toString() << "\",\"Score\":0}";
 		string returnStr;
 		ss >> returnStr;
+		cout << "command: " << returnStr << endl;
 		message::list list = message::list();
 		list.push(returnStr);
 		current_socket->emit("sendCommand", list);
@@ -240,7 +289,9 @@ void bind_events()
 		_lock.lock();
 		int command = data[1]->get_int();
 		string tileStr = data[2]->get_string();
+		cout << "sucess: " << command << tileStr << endl;
 		if (command == COMMAND_EAT) {
+			onlyThrow = true;
 			boost::tokenizer<> tok(tileStr);
 			boost::tokenizer<>::iterator it = tok.begin();
 			MJCard firstTile = MJCard::StringToCard(*it);
@@ -252,13 +303,16 @@ void bind_events()
 					player.discards += tile;
 				}
 			}
+			player.eat += CardTo63(firstTile);
 		}
 		else if (command == COMMAND_PON) {
+			onlyThrow = true;
 			MJCard tile = MJCard::StringToCard(tileStr);
 			for (int i = 0; i < 2; i++) {
 				player.Hand -= tile;
 				player.discards += tile;
 			}
+			player.pon |= CardTo34(tile);
 		}
 		else if (command == COMMAND_GON) {
 			MJCard tile = MJCard::StringToCard(tileStr);
@@ -266,17 +320,21 @@ void bind_events()
 				player.Hand -= tile;
 				player.discards += tile;
 			}
+			player.gon |= CardTo34(tile);
 		}
 		else if (command == COMMAND_PONGON) {
 			MJCard tile = MJCard::StringToCard(tileStr);
 			player.Hand -= tile;
 			player.discards += tile;
+			player.pon -= CardTo34(tile);
+			player.gon |= CardTo34(tile);
 		}
 		else if (command == COMMAND_ANGON) {
 			MJCard tile = MJCard::StringToCard(tileStr);
 			for (int i = 0; i < 4; i++) {
 				player.Hand -= tile;
 			}
+			player.anGon |= CardTo34(tile);
 		}
 		_lock.unlock();
 	}));
