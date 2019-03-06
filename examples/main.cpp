@@ -133,6 +133,7 @@ void bind_events()
 		current_socket->emit("auth",  list);
 		current_socket->emit("ready", list, [](message::list const& ack) {
 			_lock.lock();
+			cout << ack[0]->get_int() << endl;
 			player.id = ack[0]->get_int();
 			_lock.unlock();
 		});
@@ -224,7 +225,7 @@ void bind_events()
 		player.discards += throwTile;
 		if (data[0]->get_int() == player.id) {
 			player.Hand -= throwTile;
-			cout << "Count: " << player.Hand.Count() << " " << player.Hand.Print() << endl;
+			cout << "id: " << data[0]->get_int() << player.id << " throw: " << throwTile.toString() << "\nCount: " << player.Hand.Count() << "\n" << player.Hand.Print() << endl;
 		}
 		_lock.unlock();
 	}));

@@ -44,6 +44,7 @@ MJCard Irb01::Throw(const MJCard & card) {
 	T1(Hand_, stepToHu, Candidates);
 
 	if (Candidates.size() == 1) {
+		cout << Print() << " throw " << Candidates[0].color << " " << Candidates[0].value << " draw " << card.color << " " << card.value << endl;
 		return TileToCard(Candidates[0].color, Candidates[0].value);
 	}
 
@@ -61,7 +62,7 @@ MJCard Irb01::Throw(const MJCard & card) {
 
 	T2(Hand_, remainTiles, stepToHu, Candidates, Candidates2);
 
-
+	cout << Print() << " throw " << Candidates2[0].color << " " << Candidates2[0].value << " draw " << card.color << " " << card.value << endl;
 
 	if (Candidates2.size() < 20) {
 		return TileToCard(Candidates2[0].color, Candidates2[0].value);
@@ -76,7 +77,7 @@ std::pair<CommandType, MJCard> Irb01::WannaHuGon(bool canHu, bool canGon, const 
 	if (canHu)
 		return std::make_pair(COMMAND_ZIMO, card);
 	else if (canGon)
-		return std::make_pair(COMMAND_GON, gonCard);
+		return std::make_pair(NONE, Throw(card));
 	else
 		return std::make_pair(NONE, Throw(card));
 }
@@ -85,12 +86,23 @@ CommandType Irb01::WannaHGPE(bool canHu, bool canGon, bool canPon, bool canEat, 
 		return COMMAND_HU;
 	}
 	else if (canGon) {
-		return COMMAND_GON;
+		return NONE;
 	}
 	else if (canPon) {
-		return COMMAND_PON;
+		Tiles_ Hand_ = HandToTiles(Hand);
+		Tiles_ Hand_Card = HandToTiles(Hand, card);
+		int step = StepToHu1617(Hand_);
+		int stepCard = StepToHu1617(Hand_Card);
+		if (stepCard > step) {
+			return COMMAND_PON;
+		}
+		else {
+			return NONE;
+		}
+		
 	}
 	else if (canEat) {
+
 		return COMMAND_EAT;
 	}
 	else {
