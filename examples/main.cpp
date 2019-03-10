@@ -1,6 +1,7 @@
 #include "../src/sio_client.h"
 #include "UUID_generator.h"
-#include "irb01.h"
+#include "Irb00.h"
+#include "Irb01.h"
 
 #include <ctime>
 #include <boost/random/random_device.hpp>
@@ -72,7 +73,7 @@ socket::ptr current_socket;
 string uuid;
 string room;
 
-Irb01 player;
+Irb00 player;
 
 MJCard drawTile;
 MJCard throwTile;
@@ -393,12 +394,13 @@ MAIN_FUNC
     connection_listener l(h);
 
 	// create new bot
-	player = Irb01();
+	player = Irb00();
     
     h.set_open_listener(std::bind(&connection_listener::on_connected, &l));
     h.set_close_listener(std::bind(&connection_listener::on_close, &l,std::placeholders::_1));
     h.set_fail_listener(std::bind(&connection_listener::on_fail, &l));
     h.connect("http://140.118.127.157:3000");
+	//h.connect("http://127.0.0.1:3000");
     _lock.lock();
     if(!connect_finish)
     {
