@@ -143,27 +143,30 @@ std::pair<CommandType, MJCard> Irb00::WannaHuGon(bool canHu, bool canGon, const 
 		return std::make_pair(NONE, Throw(card));
 }
 CommandType Irb00::WannaHGPE(bool canHu, bool canGon, bool canPon, bool canEat, const MJCard & card, int idx) {
+	
+
 	if (canHu) {
 		return COMMAND_HU;
 	}
-	else if (canPon) {
-		bool pon = PonOrNot(card);
-		if (pon) {
-			return COMMAND_PON;
-		}
-		
-	}
-	else if (canEat) {
+
+	if (canEat) {
 		std::pair<bool, int> eat = EatOrNot(card);
 		if (eat.first) {
 			pickToEat = eat.second;
 			return COMMAND_EAT;
 		}
 	}
-	else if (canGon) {
-		return NONE;
+
+	if (canPon) {
+		bool pon = PonOrNot(card);
+		if (pon) {
+			return COMMAND_PON;
+		}
+
 	}
-	else {
+
+
+	if (!canHu && !canEat && !canPon && !canGon) {
 		cout << "WannaHGPE error" << endl;
 		return NONE;
 	}
